@@ -98,7 +98,7 @@ def train(args):
             logger.add_scalar("MSE", loss.item(), global_step=epoch * l + i)
 
         if epoch % 10 == 0:
-            labels = torch.arange(10).long().to(device)
+            labels = torch.arange(args.num_classes).long().to(device) 
             sampled_images = diffusion.sample(model, n=len(labels), labels=labels)
             ema_sampled_images = diffusion.sample(ema_model, n=len(labels), labels=labels)
             plot_images(sampled_images)
@@ -108,7 +108,6 @@ def train(args):
             torch.save(ema_model.state_dict(), os.path.join("models", args.run_name, f"ema_ckpt.pt"))
             torch.save(optimizer.state_dict(), os.path.join("models", args.run_name, f"optim.pt"))
 
-
 def launch():
     import argparse
     parser = argparse.ArgumentParser()
@@ -117,22 +116,20 @@ def launch():
     args.epochs = 300
     args.batch_size = 14
     args.image_size = 64
-    args.num_classes = 10
-    args.dataset_path = r"C:\Users\dome\datasets\cifar10\cifar10-64\train"
+    args.num_classes = 18 
+    args.dataset_path = "./dataset" # Set the new relative path here for the dataset 
     args.device = "cuda"
     args.lr = 3e-4
     train(args)
 
-
 if __name__ == '__main__':
     launch()
-    # device = "cuda"
-    # model = UNet_conditional(num_classes=10).to(device)
-    # ckpt = torch.load("./models/DDPM_conditional/ckpt.pt")
-    # model.load_state_dict(ckpt)
-    # diffusion = Diffusion(img_size=64, device=device)
-    # n = 8
-    # y = torch.Tensor([6] * n).long().to(device)
-    # x = diffusion.sample(model, n, y, cfg_scale=0)
-    # plot_images(x)
-
+    device = "cuda"
+    model = UNet_conditional(num_classes=18).to(device) # Updated the number fo classes and sub classes
+    ckpt = torch.load("./models/DDPM_conditional/ckpt.pt")
+    model.load_state_dict(ckpt)
+    diffusion = Diffusion(img_size=64, device=device)
+    n = 8
+    y = torch.Tensor([6] * n).long().to(device) 
+    x = diffusion.sample(model, n, y, cfg_scale=0)
+    plot_images(x)
